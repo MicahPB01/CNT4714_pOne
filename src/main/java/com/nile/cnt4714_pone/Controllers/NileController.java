@@ -10,6 +10,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -85,14 +86,20 @@ public class NileController {
             currentItem = allItems.get(itemID);
         }
 
-        if(currentItem == null)   {
-            Alerts.notFound(itemID);
+        if(currentItem.getQuantity() < Integer.parseInt(quantity))   {
+            Alerts.iStock(String.valueOf(currentItem.getQuantity()));
+
+            quantityIDField.clear();
             return;
         }
 
 
         if(currentItem.getInStock().equals("false"))   {
             Alerts.oOS();
+
+            itemIDField.clear();
+            quantityIDField.clear();
+
             return;
         }
 
@@ -118,7 +125,7 @@ public class NileController {
     public void addItemToCart(ActionEvent actionEvent) {
         shoppingLabel.setText("Your Current Shopping Cart With " + itemCounter + " Item(s)");
         subtotalLabel.setText("Current Subtotal for " + itemCounter + " item(s)");
-        itemCounter++;
+
 
 
 
@@ -127,6 +134,10 @@ public class NileController {
 
         itemIDField.clear();
         quantityIDField.clear();
+
+        itemCounter++;
+
+
 
         itemIDLabel.setText("Enter item ID for Item #" + itemCounter);
         quantityIDLabel.setText("Enter quantity for Item #" + itemCounter);
@@ -140,6 +151,7 @@ public class NileController {
 
         subtotalField.setText("$" + subTotal);
 
+
         findItemButton.setText("Find Item #" + itemCounter);
         addButton.setText("Add Item #" + itemCounter + " To Cart");
 
@@ -151,6 +163,12 @@ public class NileController {
 
         addedItems.add(workingItem);
 
+        if(itemCounter == 6)   {
+            itemIDField.setDisable(true);
+            quantityIDField.setDisable(true);
+            findItemButton.setDisable(true);
+            addButton.setDisable(true);
+        }
 
 
     }
@@ -158,28 +176,50 @@ public class NileController {
     public void viewCart(ActionEvent actionEvent) {
 
 
-        Alerts.cart(ItemUtils.buildString(addedItems));
+        Alerts.cart(ItemUtils.buildCart(addedItems));
 
     }
 
 
-    public void checkOut(ActionEvent actionEvent) {
+    public void checkOut(ActionEvent actionEvent) throws IOException {
         StringBuilder stringBuilder = new StringBuilder();
         Date date = new Date();
 
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEEE d, yyyy, h:mma z", Locale.US);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEEE d, yyyy, h:mm:ss a z", Locale.US);
+        SimpleDateFormat transactionDate = new SimpleDateFormat("MMddyyyyHHmmss", Locale.US);
         simpleDateFormat.setTimeZone(TimeZone.getTimeZone("EST"));
 
+
+
         String formattedDate = simpleDateFormat.format(date);
+        String tDate = transactionDate.format(date);
         double previousSub = ItemUtils.findPreviousSub(subtotalField.getText());
         double taxAmount = Double.parseDouble(decimalFormat.format(previousSub * TAX));
         String total = decimalFormat.format(previousSub + workingItem.getTotalPrice() + taxAmount);
 
         stringBuilder.append("Date: ").append(formattedDate).append("\n\n").append("Number of line items: ").append(itemCounter).append("\n\n").append("$")
-                .append(ItemUtils.buildString(addedItems)).append("\n\n").append("Order subtotal: ").append(subtotalField.getText()).append("\n\n")
-                .append("Tax rate: 6%\n\n").append("Tax Amount: $").append(taxAmount).append("ORDER TOTAL: $").append(total).append("Thanks for shopping at Nile Dot Com!");
+                .append(ItemUtils.buildCart(addedItems)).append("\n\n").append("Order subtotal: ").append(subtotalField.getText()).append("\n\n")
+                .append("Tax rate: 6%\n\n").append("Tax Amount: $").append(taxAmount).append("\n\n").append("ORDER TOTAL: $").append(total).append("\n\n").append("Thanks for shopping at Nile Dot Com!");
 
         Alerts.checkOut(String.valueOf(stringBuilder));
+
+        findItemButton.setDisable(true);
+
+        addButton.setDisable(true);
+
+
+        StringBuilder newStringBuilder = new StringBuilder();
+
+        for(int i = 0; i < addedItems.size(); i++)   {
+            newStringBuilder.append(tDate).append(ItemUtils.buildTransactionList(addedItems.get(i), formattedDate));
+        }
+        newStringBuilder.append("\n");
+
+        ItemUtils.addTransaction(newStringBuilder.toString());
+
+
+
+
 
     }
 }

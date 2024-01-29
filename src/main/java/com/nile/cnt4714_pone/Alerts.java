@@ -45,7 +45,15 @@ public class Alerts {
 
         alert.showAndWait();
 
+    }
 
+    public static void iStock(String amount)   {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle("Error");
+
+        alert.setContentText("Insufficient stock. Only " + amount + " on hand. Please reduce the quantity.");
+
+        alert.showAndWait();
 
     }
 }
