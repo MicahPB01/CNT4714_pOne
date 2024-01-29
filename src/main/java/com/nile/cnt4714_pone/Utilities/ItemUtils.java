@@ -13,6 +13,7 @@ import java.util.List;
 
 public class ItemUtils {
 
+
     public static int findDiscount(String quantity) {
         int intQ = Integer.parseInt(quantity);
         return switch (intQ) {
@@ -72,6 +73,18 @@ public class ItemUtils {
 
         Files.write(Paths.get("src/main/resources/com/nile/cnt4714_pone/transactions.csv"), Collections.singleton(transaction), StandardCharsets.UTF_8, StandardOpenOption.APPEND);
 
+    }
+
+    public static Item updateWorkingItem(Item item, int quantity) {
+        item.setRequestedQuantity(quantity);
+        double itemTotal = item.getUnitPrice() * quantity;
+        item.setTotalPrice(itemTotal);
+        return item;
+    }
+
+    public static String formatCartItem(int itemCounter, Item workingItem, int quantity) {
+        return "Item " + itemCounter + " - SKU: " + workingItem.getItemID() + ", Desc: " + workingItem.getDescription()
+                + ", Price Ea. $" + workingItem.getUnitPrice() + ", Qty: " + quantity + ", Total: $" + workingItem.getTotalPrice();
     }
 
 

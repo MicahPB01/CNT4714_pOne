@@ -5,32 +5,25 @@ import com.nile.cnt4714_pone.Models.Item;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 public class InputUtils {
 
     public static HashMap<String, Item> getItems(String path) {
-
-        List<String> allLines = new ArrayList<>();
-
+        HashMap<String, Item> allItems = new HashMap<>();
         try {
-            allLines = Files.readAllLines(Path.of(path));
+
+            List<String> allLines = Files.readAllLines(Path.of(path));
+
+            for (String line : allLines) {
+                Item item = getItem(line);
+                allItems.put(item.getItemID(), item);
+            }
         }
-        catch (IOException e)   {
+        catch (IOException e) {
             e.printStackTrace();
         }
-
-        HashMap<String, Item> allItems = new HashMap();
-
-
-        for(int i = 0; i < allLines.size(); i++)   {
-            String currentLine = allLines.get(i);
-            Item currentItem = getItem(currentLine);
-            allItems.put(currentItem.getItemID(), currentItem);
-        }
-
         return allItems;
     }
 

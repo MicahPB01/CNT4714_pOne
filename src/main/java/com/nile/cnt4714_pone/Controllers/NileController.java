@@ -17,209 +17,201 @@ import java.util.*;
 
 public class NileController {
     private final static double TAX = 0.06;
-
-    public Label quantityIDLabel;
-    public Label detailsLabel;
-    public Label subtotalLabel;
-    public Label itemIDLabel;
-    public TextField subtotalField;
-    public TextField quantityIDField;
-
-    public TextField itemIDField;
-
-    public TextField detailsField;
-    public HashMap<String, Item> allItems;
-    public Button exitButton;
-    public Button emptyButton;
-    public Button viewCartButton;
-    public Button findItemButton;
-    public Button checkButton;
-    public Button addButton;
-    public int itemCounter;
-    public Label shoppingLabel;
-    public TextField itemOneText;
-    public TextField itemTwoText;
-    public TextField itemThreeText;
-    public TextField itemFourText;
-    public TextField itemFiveText;
-
-    public List<TextField> itemNumberText = new ArrayList<>();
+    private final static int MAX_ITEMS = 5;
     private final DecimalFormat decimalFormat = new DecimalFormat("0.00");
+    private final SimpleDateFormat transactionDate = new SimpleDateFormat("MMddyyyyHHmmss", Locale.US);
+    private final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEEE d, yyyy, h:mm:ss a z", Locale.US);
+    @FXML
+    public Label quantityIDLabel, detailsLabel, subtotalLabel, itemIDLabel, shoppingLabel;
+    public TextField subtotalField, quantityIDField, itemIDField, detailsField;
+    public TextField itemOneText, itemTwoText, itemThreeText, itemFourText, itemFiveText;
+    public Button exitButton, emptyButton, viewCartButton, findItemButton, checkButton, addButton;
+
+    private int itemCounter;
     private Item workingItem;
+    private HashMap<String, Item> allItems;
+    private final List<TextField> itemNumberText = new ArrayList<>();
+    private List<Item> addedItems = new ArrayList<>();
 
-    public List<Item> addedItems = new ArrayList<>();
-
-
-    public void initialize()   {
+    public void initialize() {
         String path = "src/main/resources/com/nile/cnt4714_pone/inventory.csv";
         allItems = InputUtils.getItems(path);
-
-        viewCartButton.setDisable(true);
-        addButton.setDisable(true);
-        checkButton.setDisable(true);
-
+        setupButtons();
         itemCounter = 1;
-
-        itemNumberText.add(itemOneText);
-        itemNumberText.add(itemTwoText);
-        itemNumberText.add(itemThreeText);
-        itemNumberText.add(itemFourText);
-        itemNumberText.add(itemFiveText);
-
-
-
-
+        itemNumberText.addAll(Arrays.asList(itemOneText, itemTwoText, itemThreeText, itemFourText, itemFiveText));
     }
+
 
     @FXML
     public void findItem(ActionEvent actionEvent) {
-
         String itemID = itemIDField.getText();
-        String quantity = quantityIDField.getText();
-        int discount = ItemUtils.findDiscount(quantity);
-        Item currentItem = null;
+        Item currentItem = allItems.getOrDefault(itemID, null);
 
-
-
-
-        if(allItems.containsKey(itemID))   {
-            currentItem = allItems.get(itemID);
+        if (currentItem == null || !currentItem.getInStock().equals("true")) {
+            handleItemNotFound();
+            return;
         }
 
-        if(currentItem.getQuantity() < Integer.parseInt(quantity))   {
+        int quantity = Integer.parseInt(quantityIDField.getText());
+        if (currentItem.getQuantity() < quantity) {
             Alerts.iStock(String.valueOf(currentItem.getQuantity()));
-
-            quantityIDField.clear();
+            clearInputFields();
             return;
         }
 
-
-        if(currentItem.getInStock().equals("false"))   {
-            Alerts.oOS();
-
-            itemIDField.clear();
-            quantityIDField.clear();
-
-            return;
-        }
-
-        currentItem.setRequestedQuantity(Integer.parseInt(quantity));
-
-        String itemTotal = decimalFormat.format(currentItem.getUnitPrice() * currentItem.getRequestedQuantity());
-        currentItem.setTotalPrice(Double.parseDouble(itemTotal));
-
-
-        detailsField.setText(currentItem.getItemID() + " " + currentItem.getDescription() + " " + currentItem.getUnitPrice() + " " + currentItem.getRequestedQuantity() + " " + discount + "% $" + itemTotal);
-
-
-        addButton.setDisable(false);
-        findItemButton.setDisable(true);
-
-        workingItem = currentItem;
-
-
-
+        workingItem = ItemUtils.updateWorkingItem(currentItem, quantity);
+        updateDetailsField(currentItem, quantity);
+        enableAddButton();
     }
 
+    @FXML
+    public void viewCart(ActionEvent actionEvent) {
+        Alerts.cart(ItemUtils.buildCart(addedItems));
+    }
 
+    @FXML
+    public void checkOut(ActionEvent actionEvent) throws IOException {
+        StringBuilder receipt = buildReceipt();
+        Alerts.checkOut(receipt.toString());
+        processTransaction();
+    }
+
+    @FXML
     public void addItemToCart(ActionEvent actionEvent) {
-        shoppingLabel.setText("Your Current Shopping Cart With " + itemCounter + " Item(s)");
-        subtotalLabel.setText("Current Subtotal for " + itemCounter + " item(s)");
+        if (itemCounter > MAX_ITEMS) {
+            disableItemInput();
+            return;
+        }
 
+        updateShoppingCartDisplay();
+        addItemTextField();
+        resetInputFields();
 
+        updateSubtotal();
 
+        prepareForNextItem();
+        addedItems.add(workingItem);
+    }
 
-        ItemUtils.findTextField(itemCounter, itemNumberText).setText("Item " + itemCounter + " - SKU: " + workingItem.getItemID() + ", Desc: " + workingItem.getDescription()
-                + ", Price Ea. $" + workingItem.getUnitPrice() + ", Qty: " + quantityIDField.getText() + ", Total: $" + workingItem.getTotalPrice());
+    private void setupButtons() {
+        viewCartButton.setDisable(true);
+        addButton.setDisable(true);
+        checkButton.setDisable(true);
+    }
 
+    private void handleItemNotFound() {
+        Alerts.oOS();
+        clearInputFields();
+    }
+
+    private void clearInputFields() {
         itemIDField.clear();
         quantityIDField.clear();
+    }
 
+
+
+    private void updateDetailsField(Item item, int quantity) {
+        int discount = ItemUtils.findDiscount(String.valueOf(quantity));
+        String itemTotal = decimalFormat.format(item.getUnitPrice() * quantity);
+        detailsField.setText(item.getItemID() + " " + item.getDescription() + " " +
+                item.getUnitPrice() + " " + quantity + " " + discount + "% $" + itemTotal);
+    }
+
+    private void enableAddButton() {
+        addButton.setDisable(false);
+        findItemButton.setDisable(true);
+    }
+
+    private void disableItemInput() {
+        itemIDField.setDisable(true);
+        quantityIDField.setDisable(true);
+        findItemButton.setDisable(true);
+        addButton.setDisable(true);
+    }
+
+    private void updateShoppingCartDisplay() {
+        shoppingLabel.setText("Your Current Shopping Cart With " + itemCounter + " Item(s)");
+        subtotalLabel.setText("Current Subtotal for " + itemCounter + " item(s)");
+    }
+
+    private void addItemTextField() {
+        TextField currentTextField = ItemUtils.findTextField(itemCounter, itemNumberText);
+        int quantity = Integer.parseInt(quantityIDField.getText());
+        if (currentTextField != null) {
+            currentTextField.setText(ItemUtils.formatCartItem(itemCounter, workingItem, quantity));
+        }
+    }
+
+
+    private void resetInputFields() {
+        itemIDField.clear();
+        quantityIDField.clear();
+    }
+
+    private void updateSubtotal() {
+        double previousSub = ItemUtils.findPreviousSub(subtotalField.getText());
+        double newSubtotal = previousSub + workingItem.getTotalPrice();
+        subtotalField.setText("$" + decimalFormat.format(newSubtotal));
+    }
+
+    private void prepareForNextItem() {
         itemCounter++;
-
-
-
         itemIDLabel.setText("Enter item ID for Item #" + itemCounter);
         quantityIDLabel.setText("Enter quantity for Item #" + itemCounter);
-
-        double previousSub = ItemUtils.findPreviousSub(subtotalField.getText());
-
-
-
-
-        String subTotal = decimalFormat.format(previousSub + workingItem.getTotalPrice());
-
-        subtotalField.setText("$" + subTotal);
-
-
         findItemButton.setText("Find Item #" + itemCounter);
         addButton.setText("Add Item #" + itemCounter + " To Cart");
-
         findItemButton.setDisable(false);
         addButton.setDisable(true);
-
         viewCartButton.setDisable(false);
         checkButton.setDisable(false);
-
-        addedItems.add(workingItem);
-
-        if(itemCounter == 6)   {
-            itemIDField.setDisable(true);
-            quantityIDField.setDisable(true);
-            findItemButton.setDisable(true);
-            addButton.setDisable(true);
-        }
-
-
     }
 
-    public void viewCart(ActionEvent actionEvent) {
-
-
-        Alerts.cart(ItemUtils.buildCart(addedItems));
-
-    }
-
-
-    public void checkOut(ActionEvent actionEvent) throws IOException {
+    private StringBuilder buildReceipt() {
         StringBuilder stringBuilder = new StringBuilder();
         Date date = new Date();
-
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEEE d, yyyy, h:mm:ss a z", Locale.US);
-        SimpleDateFormat transactionDate = new SimpleDateFormat("MMddyyyyHHmmss", Locale.US);
         simpleDateFormat.setTimeZone(TimeZone.getTimeZone("EST"));
 
-
-
         String formattedDate = simpleDateFormat.format(date);
-        String tDate = transactionDate.format(date);
         double previousSub = ItemUtils.findPreviousSub(subtotalField.getText());
-        double taxAmount = Double.parseDouble(decimalFormat.format(previousSub * TAX));
-        String total = decimalFormat.format(previousSub + workingItem.getTotalPrice() + taxAmount);
+        double taxAmount = previousSub * TAX;
+        double total = previousSub + taxAmount;
 
-        stringBuilder.append("Date: ").append(formattedDate).append("\n\n").append("Number of line items: ").append(itemCounter).append("\n\n").append("$")
-                .append(ItemUtils.buildCart(addedItems)).append("\n\n").append("Order subtotal: ").append(subtotalField.getText()).append("\n\n")
-                .append("Tax rate: 6%\n\n").append("Tax Amount: $").append(taxAmount).append("\n\n").append("ORDER TOTAL: $").append(total).append("\n\n").append("Thanks for shopping at Nile Dot Com!");
+        stringBuilder.append("Date: ").append(formattedDate)
+                .append("\n\nNumber of line items: ").append(itemCounter)
+                .append("\n\n").append(ItemUtils.buildCart(addedItems))
+                .append("\n\nOrder subtotal: $").append(decimalFormat.format(previousSub))
+                .append("\n\nTax rate: 6%\n\nTax Amount: $").append(decimalFormat.format(taxAmount))
+                .append("\n\nORDER TOTAL: $").append(decimalFormat.format(total))
+                .append("\n\nThanks for shopping at Nile Dot Com!");
 
-        Alerts.checkOut(String.valueOf(stringBuilder));
-
-        findItemButton.setDisable(true);
-
-        addButton.setDisable(true);
+        return stringBuilder;
+    }
 
 
-        StringBuilder newStringBuilder = new StringBuilder();
+    private void processTransaction() throws IOException {
+        String transactionData = buildTransactionData();
+        ItemUtils.addTransaction(transactionData);
+        disableInteractionPostCheckout();
+    }
 
-        for(int i = 0; i < addedItems.size(); i++)   {
-            newStringBuilder.append(tDate).append(ItemUtils.buildTransactionList(addedItems.get(i), formattedDate));
+    private String buildTransactionData() {
+        Date date = new Date();
+        StringBuilder transactionBuilder = new StringBuilder();
+        String tDate = transactionDate.format(date);
+        String spellDate = simpleDateFormat.format(date);
+
+        for (Item item : addedItems) {
+            transactionBuilder.append(tDate).append(ItemUtils.buildTransactionList(item, spellDate));
         }
-        newStringBuilder.append("\n");
+        transactionBuilder.append("\n");
+        return transactionBuilder.toString();
+    }
 
-        ItemUtils.addTransaction(newStringBuilder.toString());
-
-
-
-
-
+    private void disableInteractionPostCheckout() {
+        findItemButton.setDisable(true);
+        addButton.setDisable(true);
     }
 }
+
+
