@@ -11,11 +11,11 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class NileController {
+    private final static double TAX = 0.06;
 
     public Label quantityIDLabel;
     public Label detailsLabel;
@@ -131,15 +131,9 @@ public class NileController {
         itemIDLabel.setText("Enter item ID for Item #" + itemCounter);
         quantityIDLabel.setText("Enter quantity for Item #" + itemCounter);
 
-        double previousSub;
+        double previousSub = ItemUtils.findPreviousSub(subtotalField.getText());
 
-        if(subtotalField.getText().isEmpty())   {
-            previousSub = 0;
-        }
-        else   {
-            String previousStringSub = subtotalField.getText().replaceAll("\\$", "");
-            previousSub = Double.parseDouble(previousStringSub);
-        }
+
 
 
         String subTotal = decimalFormat.format(previousSub + workingItem.getTotalPrice());
@@ -163,14 +157,29 @@ public class NileController {
 
     public void viewCart(ActionEvent actionEvent) {
 
+
+        Alerts.cart(ItemUtils.buildString(addedItems));
+
+    }
+
+
+    public void checkOut(ActionEvent actionEvent) {
         StringBuilder stringBuilder = new StringBuilder();
+        Date date = new Date();
 
-        for(int i = 0; i < addedItems.size(); i++)   {
-            stringBuilder.append((i+1) + ". " + addedItems.get(i).getItemID() + " " + addedItems.get(i).getDescription() + " " + addedItems.get(i).getUnitPrice() + " "
-                    + addedItems.get(i).getRequestedQuantity() + " " + ItemUtils.findDiscount(String.valueOf(addedItems.get(i).getRequestedQuantity())) + " " + addedItems.get(i).getTotalPrice() + "\n");
-        }
-        Alerts.cart(String.valueOf(stringBuilder));
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEEE d, yyyy, h:mma z", Locale.US);
+        simpleDateFormat.setTimeZone(TimeZone.getTimeZone("EST"));
 
+        String formattedDate = simpleDateFormat.format(date);
+        double previousSub = ItemUtils.findPreviousSub(subtotalField.getText());
+        double taxAmount = Double.parseDouble(decimalFormat.format(previousSub * TAX));
+        String total = decimalFormat.format(previousSub + workingItem.getTotalPrice() + taxAmount);
+
+        stringBuilder.append("Date: ").append(formattedDate).append("\n\n").append("Number of line items: ").append(itemCounter).append("\n\n").append("$")
+                .append(ItemUtils.buildString(addedItems)).append("\n\n").append("Order subtotal: ").append(subtotalField.getText()).append("\n\n")
+                .append("Tax rate: 6%\n\n").append("Tax Amount: $").append(taxAmount).append("ORDER TOTAL: $").append(total).append("Thanks for shopping at Nile Dot Com!");
+
+        Alerts.checkOut(String.valueOf(stringBuilder));
 
     }
 }

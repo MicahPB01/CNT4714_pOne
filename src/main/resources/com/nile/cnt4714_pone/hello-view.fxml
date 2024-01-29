@@ -25,7 +25,7 @@
             <Button fx:id="emptyButton" layoutX="14.0" layoutY="117.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="200.0" text="Empty Cart - Start a New Order" />
             <Button fx:id="viewCartButton" layoutX="14.0" layoutY="87.0" mnemonicParsing="false" onAction="#viewCart" prefHeight="25.0" prefWidth="200.0" text="View Cart" />
             <Button fx:id="findItemButton" layoutX="14.0" layoutY="57.0" mnemonicParsing="false" onAction="#findItem" prefHeight="25.0" prefWidth="200.0" text="Find Item #1" />
-            <Button fx:id="checkButton" layoutX="386.0" layoutY="87.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="200.0" text="Check out" />
+            <Button fx:id="checkButton" layoutX="386.0" layoutY="87.0" mnemonicParsing="false" onAction="#checkOut" prefHeight="25.0" prefWidth="200.0" text="Check out" />
             <Button fx:id="addButton" layoutX="386.0" layoutY="57.0" mnemonicParsing="false" onAction="#addItemToCart" prefWidth="200.0" text="Add Item #1 To Cart" />
          </children>
       </AnchorPane>

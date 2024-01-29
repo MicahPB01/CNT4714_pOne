@@ -36,4 +36,16 @@ public class Alerts {
         alert.showAndWait();
 
     }
+
+    public static void checkOut(String invoice)   {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+
+        alert.setTitle("Final Invoice");
+        alert.setContentText(invoice);
+
+        alert.showAndWait();
+
+
+
+    }
 }

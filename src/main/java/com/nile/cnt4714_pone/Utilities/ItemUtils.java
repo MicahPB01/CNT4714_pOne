@@ -1,6 +1,6 @@
 package com.nile.cnt4714_pone.Utilities;
 
-import javafx.scene.control.Label;
+import com.nile.cnt4714_pone.Models.Item;
 import javafx.scene.control.TextField;
 
 import java.util.List;
@@ -31,17 +31,32 @@ public class ItemUtils {
         };
     }
 
-    public static Label findLabel(int itemCounter, List<Label> itemIDLabel)   {
+    public static String buildString(List<Item> addedItems)   {
+        StringBuilder stringBuilder = new StringBuilder();
 
-        return switch (itemCounter)   {
-            case 1 -> itemIDLabel.get(0);
-            case 2 -> itemIDLabel.get(1);
-            case 3 -> itemIDLabel.get(2);
-            case 4 -> itemIDLabel.get(3);
-            default -> null;
-        };
+        for(int i = 0; i < addedItems.size(); i++)   {
+            stringBuilder.append(i + 1).append(". ").append(addedItems.get(i).getItemID()).append(" ").append(addedItems.get(i).getDescription()).append(" ")
+                    .append(addedItems.get(i).getUnitPrice()).append(" ").append(addedItems.get(i).getRequestedQuantity()).append(" ")
+                    .append(ItemUtils.findDiscount(String.valueOf(addedItems.get(i).getRequestedQuantity()))).append(" ")
+                    .append(addedItems.get(i).getTotalPrice()).append("\n");
+        }
 
+        return String.valueOf(stringBuilder);
 
+    }
+
+    public static double findPreviousSub(String subtotalField)   {
+        double previousSub;
+
+        if(subtotalField.isEmpty())   {
+            previousSub = 0;
+        }
+        else   {
+            String previousStringSub = subtotalField.replaceAll("\\$", "");
+            previousSub = Double.parseDouble(previousStringSub);
+        }
+
+        return previousSub;
     }
 
 
