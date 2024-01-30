@@ -1,6 +1,11 @@
+/* Name: Micah Puccio-Ball
+ Course: CNT 4714 – Spring 2024
+ Assignment title: Project 1 – An Event-driven Enterprise Simulation
+ Date: Friday, January 26, 2024
+*/
 package com.nile.cnt4714_pone.Utilities;
 
-import com.nile.cnt4714_pone.Models.Item;
+import com.nile.cnt4714_pone.Item;
 
 import java.io.IOException;
 import java.nio.file.Files;

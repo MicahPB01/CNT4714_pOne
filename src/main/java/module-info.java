@@ -12,7 +12,5 @@ module com.nile.cnt4714_pone {
     requires com.almasb.fxgl.all;
 
     opens com.nile.cnt4714_pone to javafx.fxml;
-    exports com.nile.cnt4714_pone.Controllers;
-    opens com.nile.cnt4714_pone.Controllers to javafx.fxml;
     exports com.nile.cnt4714_pone;
 }

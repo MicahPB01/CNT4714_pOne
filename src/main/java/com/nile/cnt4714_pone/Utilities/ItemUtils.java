@@ -1,6 +1,11 @@
+/* Name: Micah Puccio-Ball
+ Course: CNT 4714 – Spring 2024
+ Assignment title: Project 1 – An Event-driven Enterprise Simulation
+ Date: Friday, January 26, 2024
+*/
 package com.nile.cnt4714_pone.Utilities;
 
-import com.nile.cnt4714_pone.Models.Item;
+import com.nile.cnt4714_pone.Item;
 import javafx.scene.control.TextField;
 
 import java.io.IOException;
@@ -8,10 +13,12 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.text.DecimalFormat;
 import java.util.Collections;
 import java.util.List;
 
 public class ItemUtils {
+
 
 
     public static int findDiscount(String quantity) {
@@ -55,30 +62,19 @@ public class ItemUtils {
 
     }
 
-    public static double findPreviousSub(String subtotalField)   {
-        double previousSub;
 
-        if(subtotalField.isEmpty())   {
-            previousSub = 0;
-        }
-        else   {
-            String previousStringSub = subtotalField.replaceAll("\\$", "");
-            previousSub = Double.parseDouble(previousStringSub);
-        }
-
-        return previousSub;
-    }
 
     public static void addTransaction (String transaction) throws IOException {
 
-        Files.write(Paths.get("src/main/resources/com/nile/cnt4714_pone/transactions.csv"), Collections.singleton(transaction), StandardCharsets.UTF_8, StandardOpenOption.APPEND);
+        Files.write(Paths.get("transactions.csv"), Collections.singleton(transaction), StandardCharsets.UTF_8, StandardOpenOption.APPEND);
 
     }
 
     public static Item updateWorkingItem(Item item, int quantity) {
+        DecimalFormat decimalFormat = new DecimalFormat("0.00");
         item.setRequestedQuantity(quantity);
         double itemTotal = item.getUnitPrice() * quantity;
-        item.setTotalPrice(itemTotal);
+        item.setTotalPrice(Double.parseDouble(decimalFormat.format(itemTotal)));
         return item;
     }
 

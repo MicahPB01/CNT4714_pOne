@@ -1,9 +1,13 @@
-package com.nile.cnt4714_pone.Controllers;
+/* Name: Micah Puccio-Ball
+ Course: CNT 4714 – Spring 2024
+ Assignment title: Project 1 – An Event-driven Enterprise Simulation
+ Date: Friday, January 26, 2024
+*/
+package com.nile.cnt4714_pone;
 
-import com.nile.cnt4714_pone.Alerts;
-import com.nile.cnt4714_pone.Models.Item;
 import com.nile.cnt4714_pone.Utilities.InputUtils;
 import com.nile.cnt4714_pone.Utilities.ItemUtils;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -30,11 +34,12 @@ public class NileController {
     private int itemCounter;
     private Item workingItem;
     private HashMap<String, Item> allItems;
+
     private final List<TextField> itemNumberText = new ArrayList<>();
-    private List<Item> addedItems = new ArrayList<>();
+    private final List<Item> addedItems = new ArrayList<>();
 
     public void initialize() {
-        String path = "src/main/resources/com/nile/cnt4714_pone/inventory.csv";
+        String path = "inventory.csv";
         allItems = InputUtils.getItems(path);
         setupButtons();
         itemCounter = 1;
@@ -47,10 +52,17 @@ public class NileController {
         String itemID = itemIDField.getText();
         Item currentItem = allItems.getOrDefault(itemID, null);
 
-        if (currentItem == null || !currentItem.getInStock().equals("true")) {
+        if(currentItem == null)   {
             handleItemNotFound();
             return;
         }
+
+        if (!currentItem.getInStock().equals("true")) {
+            handleOOS();
+            return;
+        }
+
+
 
         int quantity = Integer.parseInt(quantityIDField.getText());
         if (currentItem.getQuantity() < quantity) {
@@ -78,7 +90,7 @@ public class NileController {
 
     @FXML
     public void addItemToCart(ActionEvent actionEvent) {
-        if (itemCounter > MAX_ITEMS) {
+        if (itemCounter + 1 > MAX_ITEMS) {
             disableItemInput();
             return;
         }
@@ -93,6 +105,49 @@ public class NileController {
         addedItems.add(workingItem);
     }
 
+    @FXML
+    public void exitApp(ActionEvent actionEvent) {
+        Platform.exit();
+    }
+
+
+    @FXML
+    public void emptyCart(ActionEvent actionEvent) {
+        emptyCart();
+    }
+
+    private void clearItemTextFields()   {
+        for (TextField textField : itemNumberText) {
+            textField.clear();
+        }
+    }
+
+    private void disableInteractionPostCheckout() {
+        findItemButton.setDisable(true);
+        addButton.setDisable(true);
+
+        for (TextField textField : itemNumberText) {
+            textField.setDisable(true);
+        }
+
+    }
+
+    private void emptyCart()   {
+        addedItems.clear();
+        clearItemTextFields();
+        setupButtons();
+        shoppingLabel.setText("Your Shopping Cart Is Empty");
+        itemCounter = 0;
+        prepareForNextItem();
+        subtotalField.clear();
+        subtotalLabel.setText("Current Subtotal for 0 item(s)");
+        detailsField.clear();
+        for (TextField textField : itemNumberText) {
+            textField.setDisable(false);
+        }
+    }
+
+
     private void setupButtons() {
         viewCartButton.setDisable(true);
         addButton.setDisable(true);
@@ -100,6 +155,11 @@ public class NileController {
     }
 
     private void handleItemNotFound() {
+        Alerts.notFound(itemIDField.getText());
+        clearInputFields();
+    }
+
+    private void handleOOS() {
         Alerts.oOS();
         clearInputFields();
     }
@@ -150,7 +210,7 @@ public class NileController {
     }
 
     private void updateSubtotal() {
-        double previousSub = ItemUtils.findPreviousSub(subtotalField.getText());
+        double previousSub = findPreviousSub();
         double newSubtotal = previousSub + workingItem.getTotalPrice();
         subtotalField.setText("$" + decimalFormat.format(newSubtotal));
     }
@@ -173,12 +233,12 @@ public class NileController {
         simpleDateFormat.setTimeZone(TimeZone.getTimeZone("EST"));
 
         String formattedDate = simpleDateFormat.format(date);
-        double previousSub = ItemUtils.findPreviousSub(subtotalField.getText());
+        double previousSub = findPreviousSub();
         double taxAmount = previousSub * TAX;
         double total = previousSub + taxAmount;
 
         stringBuilder.append("Date: ").append(formattedDate)
-                .append("\n\nNumber of line items: ").append(itemCounter)
+                .append("\n\nNumber of line items: ").append(itemCounter - 1)
                 .append("\n\n").append(ItemUtils.buildCart(addedItems))
                 .append("\n\nOrder subtotal: $").append(decimalFormat.format(previousSub))
                 .append("\n\nTax rate: 6%\n\nTax Amount: $").append(decimalFormat.format(taxAmount))
@@ -193,6 +253,7 @@ public class NileController {
         String transactionData = buildTransactionData();
         ItemUtils.addTransaction(transactionData);
         disableInteractionPostCheckout();
+
     }
 
     private String buildTransactionData() {
@@ -208,10 +269,23 @@ public class NileController {
         return transactionBuilder.toString();
     }
 
-    private void disableInteractionPostCheckout() {
-        findItemButton.setDisable(true);
-        addButton.setDisable(true);
+
+    private double findPreviousSub()   {
+
+        double previousSub;
+
+        if(subtotalField.getText().isEmpty())   {
+            previousSub = 0;
+        }
+        else   {
+            String previousStringSub = subtotalField.getText().replaceAll("\\$", "");
+            previousSub = Double.parseDouble(previousStringSub);
+        }
+
+        return previousSub;
     }
+
+
 }
 
 

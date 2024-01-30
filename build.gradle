@@ -3,7 +3,9 @@ plugins {
     id 'application'
     id 'org.javamodularity.moduleplugin' version '1.8.12'
     id 'org.openjfx.javafxplugin' version '0.0.13'
-    id 'org.beryx.jlink' version '2.25.0'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
+    id 'org.beryx.jlink' version '3.0.1'
+    id 'io.github.fvarrui.javapackager.plugin' version '1.7.5'
 }
 
 group 'com.nile'
@@ -11,10 +13,6 @@ version '1.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
-}
-
-ext {
-    junitVersion = '5.9.1'
 }
 
 sourceCompatibility = '18'
@@ -25,8 +23,37 @@ tasks.withType(JavaCompile) {
 }
 
 application {
-    mainModule = 'com.nile.cnt4714_pone.Controllers'
-    mainClass = 'com.nile.cnt4714_pone.Controllers.NileApplication'
+    mainModule = "com.nile.cnt4714_pone"
+    mainClass = 'com.nile.cnt4714_pone.Launch'
+}
+
+dependencies {
+    def junitVersion = '5.9.1'
+    def javafxVersion = '21-ea+31'
+
+
+    implementation "org.openjfx:javafx-swing:${javafxVersion}"
+    implementation group: 'org.controlsfx', name: 'controlsfx', version: '11.1.2'
+    implementation group: 'com.dlsc.formsfx', name: 'formsfx-core', version: '11.5.0'
+    implementation group: 'net.synedra', name: 'validatorfx', version: '0.4.0'
+    implementation group: 'org.kordamp.ikonli', name: 'ikonli-javafx', version: '12.3.1'
+    implementation group: 'org.kordamp.bootstrapfx', name: 'bootstrapfx-core', version: '0.4.0'
+    implementation group: 'eu.hansolo', name: 'tilesfx', version: '17.1.15'
+    implementation group: 'com.github.almasb', name: 'fxgl', version: '17.2'
+
+
+    implementation 'eu.hansolo.fx:countries:17.0.37'
+    implementation 'eu.hansolo:toolboxfx:17.0.47'
+    implementation 'eu.hansolo:toolbox:17.0.57'
+    implementation 'eu.hansolo:medusa:16.0.1'
+
+
+    testImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
+}
+
+test {
+    useJUnitPlatform()
 }
 
 javafx {
@@ -34,45 +61,28 @@ javafx {
     modules = ['javafx.controls', 'javafx.fxml', 'javafx.web', 'javafx.media']
 }
 
-dependencies {
-    implementation('org.controlsfx:controlsfx:11.1.2')
-    implementation('com.dlsc.formsfx:formsfx-core:11.5.0') {
-        exclude(group: 'org.openjfx')
-    }
-    implementation('net.synedra:validatorfx:0.4.0') {
-        exclude(group: 'org.openjfx')
-    }
-    implementation('org.kordamp.ikonli:ikonli-javafx:12.3.1')
-    implementation('org.kordamp.bootstrapfx:bootstrapfx-core:0.4.0')
-    implementation('eu.hansolo:tilesfx:17.1.15') {
-        exclude(group: 'org.openjfx')
-    }
-    implementation('com.github.almasb:fxgl:17.2') {
-        exclude(group: 'org.openjfx')
-    }
-
-    implementation 'eu.hansolo.fx:countries:17.0.37'
-    implementation 'eu.hansolo:toolboxfx:17.0.47'
-    implementation 'eu.hansolo:toolbox:17.0.57'
-    implementation 'org.openjfx:javafx-swing:21-ea+31'
-    implementation 'eu.hansolo:medusa:16.0.1'
-
-    testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
-}
-
-test {
-    useJUnitPlatform()
+shadowJar {
+    archiveBaseName.set('NileDotCom')
+    archiveClassifier.set('')
+    archiveVersion.set('')
+    configurations = [project.configurations.runtimeClasspath]
+    mainClassName = 'com.nile.cnt4714_pone.Launch'
+    exclude("module-info.java")
 }
 
 jlink {
-    imageZip = project.file("${buildDir}/distributions/app-${javafx.platform.classifier}.zip")
     options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
     launcher {
-        name = 'app'
+        name = 'NileDotCom'
+        jvmArgs = ['-Dfile.encoding=UTF-8']
     }
+    imageZip = project.file("${buildDir}/distributions/app-${javafx.platform.classifier}.zip")
 }
 
 jlinkZip {
     group = 'distribution'
+}
+
+task packageMyApp(type: io.github.fvarrui.javapackager.gradle.PackageTask, dependsOn: build) {
+    mainClass = 'com.nile.cnt4714_pone.Launch'
 }

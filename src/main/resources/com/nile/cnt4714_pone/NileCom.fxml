@@ -5,7 +5,7 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="466.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.nile.cnt4714_pone.Controllers.NileController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="466.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.nile.cnt4714_pone.NileController">
    <children>
       <AnchorPane layoutY="-2.0" prefHeight="156.0" prefWidth="600.0">
          <children>
@@ -14,15 +14,15 @@
             <TextField fx:id="detailsField" layoutX="176.0" layoutY="81.0" prefHeight="25.0" prefWidth="418.0" />
             <TextField fx:id="subtotalField" layoutX="176.0" layoutY="111.0" prefHeight="25.0" prefWidth="418.0" />
             <Label fx:id="itemIDLabel" layoutX="37.0" layoutY="28.0" text="Enter item ID for Item #1" />
-            <Label fx:id="quantityIDLabel" layoutX="18.0" layoutY="58.0" text="Enter quantity ID for Item #1" />
+            <Label fx:id="quantityIDLabel" layoutX="18.0" layoutY="58.0" text="Enter quantity for Item #1" />
             <Label fx:id="detailsLabel" layoutX="70.0" layoutY="88.0" text="Details for Item #1" />
             <Label fx:id="subtotalLabel" layoutX="14.0" layoutY="118.0" text="Current Subtotal for 0 item(s)" />
          </children>
       </AnchorPane>
       <AnchorPane layoutY="320.0" prefHeight="50.0" prefWidth="600.0">
          <children>
-            <Button fx:id="exitButton" layoutX="386.0" layoutY="117.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="200.0" text="Exit (Close App)" />
-            <Button fx:id="emptyButton" layoutX="14.0" layoutY="117.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="200.0" text="Empty Cart - Start a New Order" />
+            <Button fx:id="exitButton" layoutX="386.0" layoutY="117.0" mnemonicParsing="false" onAction="#exitApp" prefHeight="25.0" prefWidth="200.0" text="Exit (Close App)" />
+            <Button fx:id="emptyButton" layoutX="14.0" layoutY="117.0" mnemonicParsing="false" onAction="#emptyCart" prefHeight="25.0" prefWidth="200.0" text="Empty Cart - Start a New Order" />
             <Button fx:id="viewCartButton" layoutX="14.0" layoutY="87.0" mnemonicParsing="false" onAction="#viewCart" prefHeight="25.0" prefWidth="200.0" text="View Cart" />
             <Button fx:id="findItemButton" layoutX="14.0" layoutY="57.0" mnemonicParsing="false" onAction="#findItem" prefHeight="25.0" prefWidth="200.0" text="Find Item #1" />
             <Button fx:id="checkButton" layoutX="386.0" layoutY="87.0" mnemonicParsing="false" onAction="#checkOut" prefHeight="25.0" prefWidth="200.0" text="Check out" />

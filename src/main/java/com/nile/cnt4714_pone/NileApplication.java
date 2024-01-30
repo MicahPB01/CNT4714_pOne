@@ -16,7 +16,7 @@ import java.io.IOException;
 public class NileApplication extends Application {
     @Override
     public void start(Stage stage) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(NileApplication.class.getResource("hello-view.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(NileApplication.class.getResource("NileCom.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 600, 466);
         stage.setTitle("Nile Dot Com!");
         stage.setScene(scene);
