@@ -47,7 +47,7 @@ dependencies {
     implementation 'eu.hansolo:toolbox:17.0.57'
     implementation 'eu.hansolo:medusa:16.0.1'
 
-
+    testImplementation 'junit:junit:4.4'
     testImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
 }
